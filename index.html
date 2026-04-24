@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yuki Kong — Computing Science & ML</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --white:#FFFFFF; --off-white:#F7F7F5; --ink:#0E0E0C; --ink-2:#3A3A38;
+  --muted:#888884; --border:#E4E4E0; --accent:#2B5CE6; --accent-light:#EEF2FF;
+  --serif:'Instrument Serif',Georgia,serif; --sans:'DM Sans',system-ui,sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--white);color:var(--ink);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 max(2rem,calc((100vw - 1100px)/2));height:60px;display:flex;align-items:center;justify-content:space-between;transition:box-shadow .3s}
+nav.scrolled{box-shadow:0 1px 20px rgba(0,0,0,.06)}
+.nav-logo{font-family:var(--serif);font-size:1.1rem;color:var(--ink);text-decoration:none;letter-spacing:-.01em}
+.nav-links{display:flex;align-items:center;gap:2rem;list-style:none}
+.nav-links a{font-size:.85rem;font-weight:400;color:var(--muted);text-decoration:none;letter-spacing:.03em;text-transform:uppercase;transition:color .2s}
+.nav-links a:hover,.nav-links a.active{color:var(--ink)}
+.nav-cta{background:var(--ink);color:var(--white)!important;padding:.45rem 1.1rem;border-radius:100px;font-size:.82rem!important;text-transform:none!important;letter-spacing:0!important;font-weight:500!important;transition:background .2s,transform .15s!important}
+.nav-cta:hover{background:var(--accent)!important;transform:translateY(-1px)}
+
+section{padding:6rem max(2rem,calc((100vw - 1100px)/2))}
+.section-label{font-size:.75rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:.75rem}
+
+/* HERO */
+#hero{min-height:100vh;display:grid;grid-template-columns:1fr 380px;grid-template-rows:1fr auto;column-gap:4rem;align-items:center;padding-top:100px;padding-bottom:4rem}
+.hero-left{grid-column:1;grid-row:1}
+.hero-photo-col{grid-column:2;grid-row:1/3;display:flex;flex-direction:column;gap:.75rem;align-self:center}
+.hero-metrics-row{grid-column:1;grid-row:2}
+.hero-status{display:inline-flex;align-items:center;gap:.4rem;background:var(--off-white);border:1px solid var(--border);border-radius:100px;padding:.3rem .9rem;font-size:.78rem;color:var(--ink-2);margin-bottom:2rem;width:fit-content}
+.status-dot{width:7px;height:7px;border-radius:50%;background:#22C55E;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+h1.hero-name{font-family:var(--serif);font-size:clamp(2.8rem,5.5vw,5rem);line-height:1;letter-spacing:-.03em;color:var(--ink);margin-bottom:1.25rem}
+h1.hero-name em{font-style:italic;color:var(--muted)}
+.hero-desc{font-size:1rem;font-weight:300;color:var(--ink-2);max-width:480px;line-height:1.78;margin-bottom:2.5rem}
+.hero-actions{display:flex;gap:1rem;flex-wrap:wrap}
+.btn-primary{background:var(--ink);color:var(--white);padding:.75rem 1.75rem;border-radius:100px;font-size:.9rem;font-weight:500;text-decoration:none;transition:background .2s,transform .15s;display:inline-flex;align-items:center;gap:.5rem}
+.btn-primary:hover{background:var(--accent);transform:translateY(-2px)}
+.btn-ghost{border:1px solid var(--border);color:var(--ink-2);padding:.75rem 1.75rem;border-radius:100px;font-size:.9rem;text-decoration:none;transition:border-color .2s,background .2s,transform .15s;display:inline-flex;align-items:center;gap:.5rem}
+.btn-ghost:hover{border-color:var(--ink);background:var(--off-white);transform:translateY(-2px)}
+.photo-wrap{display:flex;flex-direction:column;gap:.6rem}
+.photo-placeholder{width:100%;aspect-ratio:4/5;border-radius:20px;border:2px dashed var(--border);background:var(--off-white);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.75rem;cursor:pointer;transition:border-color .25s,background .25s;position:relative;overflow:hidden}
+.photo-placeholder:hover{border-color:var(--accent);background:var(--accent-light)}
+.photo-placeholder img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none;border-radius:18px}
+.photo-placeholder.loaded img{display:block}
+.photo-placeholder.loaded .photo-ph-inner{display:none}
+.photo-ph-inner{display:flex;flex-direction:column;align-items:center;gap:.6rem;pointer-events:none}
+.photo-icon-ring{width:52px;height:52px;border-radius:50%;background:var(--white);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.5rem}
+.photo-ph-text{font-size:.82rem;font-weight:500;color:var(--muted);text-align:center}
+.photo-ph-sub{font-size:.7rem;color:#CCC;text-align:center}
+.photo-label-row{display:flex;align-items:center;justify-content:space-between}
+.photo-label{font-size:.7rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.photo-edit-btn{font-size:.7rem;color:var(--accent);background:none;border:none;cursor:pointer;font-family:var(--sans);padding:0}
+.photo-edit-btn:hover{text-decoration:underline}
+.hero-metrics{display:flex;gap:2.5rem;padding-top:3rem;border-top:1px solid var(--border);flex-wrap:wrap;margin-top:2.5rem}
+.metric-val{font-family:var(--serif);font-size:2.2rem;line-height:1;color:var(--ink);margin-bottom:.25rem}
+.metric-label{font-size:.8rem;color:var(--muted);font-weight:400}
+
+/* ABOUT */
+#about{background:var(--off-white)}
+.about-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:5rem;align-items:start}
+.about-text h2{font-family:var(--serif);font-size:clamp(2rem,4vw,3rem);line-height:1.15;letter-spacing:-.02em;margin-bottom:1.5rem}
+.about-text p{font-size:1rem;font-weight:300;line-height:1.8;color:var(--ink-2);margin-bottom:1.25rem}
+.focus-areas{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1.5rem}
+.focus-tag{background:var(--white);border:1px solid var(--border);padding:.35rem .9rem;border-radius:100px;font-size:.82rem;color:var(--ink-2);transition:border-color .2s,background .2s,color .2s}
+.focus-tag:hover{border-color:var(--accent);background:var(--accent-light);color:var(--accent)}
+.about-side h3{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:1.25rem;margin-top:2rem;font-weight:500}
+.about-side h3:first-child{margin-top:0}
+.edu-item{margin-bottom:1.5rem}
+.edu-school{font-size:.9rem;font-weight:500;color:var(--ink);margin-bottom:.2rem}
+.edu-degree{font-size:.85rem;color:var(--ink-2);font-weight:300}
+.edu-meta{font-size:.78rem;color:var(--muted);margin-top:.15rem}
+.gpa-badge{display:inline-block;background:var(--accent-light);color:var(--accent);font-size:.73rem;font-weight:500;padding:.2rem .6rem;border-radius:100px;margin-left:.4rem}
+
+/* ═══ PROJECTS ═══ */
+#projects{background:var(--white)}
+.projects-header{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:3rem}
+.projects-header h2{font-family:var(--serif);font-size:clamp(2rem,4vw,3rem);letter-spacing:-.02em}
+.featured-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-bottom:2rem}
+
+/* Project card */
+.project-card{background:var(--white);border:1px solid var(--border);border-radius:16px;display:flex;flex-direction:column;cursor:pointer;transition:border-color .25s,box-shadow .25s,transform .25s;overflow:hidden}
+.project-card:hover{border-color:var(--accent);box-shadow:0 8px 32px rgba(43,92,230,.1);transform:translateY(-4px)}
+.project-card.featured{background:var(--ink);color:var(--white);border-color:transparent}
+.project-card.featured:hover{box-shadow:0 12px 40px rgba(0,0,0,.25)}
+
+/* card media */
+.card-media{width:100%;aspect-ratio:16/9;flex-shrink:0;background:var(--off-white);border-bottom:1.5px dashed #D8D8D4;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.45rem;position:relative;overflow:hidden;transition:background .22s;border-radius:14px 14px 0 0}
+.project-card.featured .card-media{background:rgba(255,255,255,.07);border-bottom-color:rgba(255,255,255,.1)}
+.card-media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:13px 13px 0 0}
+.media-ph{display:flex;flex-direction:column;align-items:center;gap:.4rem;pointer-events:none}
+.media-ph-badge{font-size:.68rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;background:var(--white);color:var(--muted);border:1px dashed #CCC;border-radius:100px;padding:.2rem .7rem}
+.project-card.featured .media-ph-badge{background:rgba(255,255,255,.12);color:rgba(255,255,255,.4);border-color:rgba(255,255,255,.15)}
+.media-ph-icon{font-size:1.4rem}
+.media-ph-text{font-size:.72rem;color:var(--muted)}
+.project-card.featured .media-ph-text{color:rgba(255,255,255,.35)}
+.card-body{padding:1.6rem;display:flex;flex-direction:column;flex:1}
+.project-num{font-size:.7rem;font-weight:500;letter-spacing:.08em;color:var(--muted);margin-bottom:.75rem}
+.project-card.featured .project-num{color:rgba(255,255,255,.35)}
+.project-title{font-size:1.05rem;font-weight:500;margin-bottom:.6rem;line-height:1.3}
+.project-desc{font-size:.84rem;font-weight:300;color:var(--ink-2);line-height:1.65;flex:1}
+.project-card.featured .project-desc{color:rgba(255,255,255,.6)}
+.project-tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:1.2rem}
+.project-tag{font-size:.72rem;font-weight:500;background:#F0F0EE;color:var(--ink-2);padding:.25rem .65rem;border-radius:100px}
+.project-card.featured .project-tag{background:rgba(255,255,255,.12);color:rgba(255,255,255,.75)}
+.project-arrow{display:inline-flex;align-items:center;gap:.3rem;font-size:.8rem;color:var(--muted);margin-top:1.2rem;font-weight:500;transition:color .2s,gap .2s}
+.project-card:hover .project-arrow{color:var(--accent);gap:.5rem}
+.project-card.featured .project-arrow{color:rgba(255,255,255,.45)}
+.project-card.featured:hover .project-arrow{color:var(--white)}
+
+/* Expanded grid */
+.expand-section{overflow:hidden;max-height:0;transition:max-height .6s cubic-bezier(.16,1,.3,1);margin-top:1.5rem}
+.expand-section.open{max-height:3000px}
+.expand-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+.mini-card{background:var(--off-white);border:1px solid var(--border);border-radius:12px;display:flex;flex-direction:column;cursor:pointer;transition:border-color .2s,background .2s,transform .2s;overflow:hidden}
+.mini-card:hover{border-color:var(--accent);background:var(--accent-light);transform:translateY(-2px)}
+.mini-media{width:100%;aspect-ratio:16/9;background:#E8E8E4;border-bottom:1.5px dashed #D0D0CC;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.35rem;position:relative;overflow:hidden;border-radius:10px 10px 0 0;flex-shrink:0}
+.mini-media img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:9px 9px 0 0}
+.mini-ph{display:flex;flex-direction:column;align-items:center;gap:.3rem;pointer-events:none}
+.mini-ph-icon{font-size:1rem}
+.mini-ph-text{font-size:.62rem;color:var(--muted);font-weight:500}
+.mini-body{padding:1rem}
+.mini-title{font-size:.88rem;font-weight:500;color:var(--ink);margin-bottom:.3rem}
+.mini-desc{font-size:.77rem;color:var(--muted);font-weight:300;line-height:1.5}
+.mini-tags{display:flex;gap:.3rem;flex-wrap:wrap;margin-top:.65rem}
+.mini-tag{font-size:.65rem;background:var(--white);color:var(--ink-2);padding:.18rem .5rem;border-radius:100px;border:1px solid var(--border)}
+
+/* View more button */
+.view-more-wrap{display:flex;justify-content:center;margin-top:2rem}
+.view-more-btn{display:inline-flex;align-items:center;gap:.5rem;border:1px solid var(--border);background:var(--white);color:var(--ink-2);padding:.7rem 1.8rem;border-radius:100px;font-size:.88rem;font-weight:500;cursor:pointer;transition:border-color .2s,background .2s,color .2s;font-family:var(--sans)}
+.view-more-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light)}
+.view-more-btn svg{transition:transform .3s}
+.view-more-btn.open svg{transform:rotate(180deg)}
+
+/* EXPERIENCE */
+#experience{background:var(--off-white)}
+#experience h2{font-family:var(--serif);font-size:clamp(2rem,4vw,3rem);letter-spacing:-.02em;margin-bottom:3rem}
+.timeline{position:relative}
+.timeline::before{content:'';position:absolute;left:0;top:8px;bottom:8px;width:1px;background:var(--border)}
+.exp-item{display:grid;grid-template-columns:1fr 2fr;gap:2rem;padding:2rem 0 2rem 2rem;position:relative;border-bottom:1px solid var(--border)}
+.exp-item:last-child{border-bottom:none}
+.exp-item::before{content:'';position:absolute;left:-4px;top:2.5rem;width:9px;height:9px;border-radius:50%;background:var(--white);border:1.5px solid var(--border);transition:border-color .2s,background .2s}
+.exp-item:hover::before{border-color:var(--accent);background:var(--accent)}
+.exp-period{font-size:.8rem;color:var(--muted);padding-top:.2rem;line-height:1.5}
+.exp-current{display:inline-block;background:#DCFCE7;color:#16A34A;font-size:.68rem;font-weight:600;padding:.15rem .6rem;border-radius:100px;margin-top:.4rem;letter-spacing:.04em;text-transform:uppercase}
+.exp-role{font-size:1rem;font-weight:500;color:var(--ink);margin-bottom:.2rem}
+.exp-company{font-size:.9rem;color:var(--muted);margin-bottom:.9rem}
+.exp-stack{display:flex;flex-wrap:wrap;gap:.35rem;margin-bottom:1rem}
+.stack-tag{font-size:.72rem;background:var(--white);border:1px solid var(--border);color:var(--ink-2);padding:.2rem .6rem;border-radius:100px}
+.exp-bullets{list-style:none}
+.exp-bullets li{font-size:.875rem;font-weight:300;color:var(--ink-2);line-height:1.65;padding-left:1rem;position:relative;margin-bottom:.4rem}
+.exp-bullets li::before{content:'→';position:absolute;left:0;color:var(--muted);font-size:.7rem;top:.15rem}
+
+/* SKILLS */
+#skills{background:var(--white)}
+#skills h2{font-family:var(--serif);font-size:clamp(2rem,4vw,3rem);letter-spacing:-.02em;margin-bottom:3rem}
+.skills-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2.5rem}
+.skill-group-label{font-size:.72rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem}
+.skill-chips{display:flex;flex-wrap:wrap;gap:.5rem}
+.skill-chip{background:var(--off-white);border:1px solid var(--border);padding:.4rem .85rem;border-radius:100px;font-size:.82rem;color:var(--ink-2);transition:all .2s;cursor:default}
+.skill-chip:hover{background:var(--accent-light);border-color:var(--accent);color:var(--accent)}
+.skill-chip.hot{background:var(--accent-light);border-color:rgba(43,92,230,.3);color:var(--accent)}
+
+/* CERTS */
+#certs{background:var(--off-white)}
+#certs h2{font-family:var(--serif);font-size:clamp(1.5rem,3vw,2.2rem);letter-spacing:-.02em;margin-bottom:2rem}
+.cert-list{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;align-items:stretch}
+.cert-card{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:1rem 1.4rem;display:flex;align-items:flex-start;gap:.75rem;height:100%;min-height:92px;transition:border-color .2s,box-shadow .2s}
+.cert-card:hover{border-color:var(--accent);box-shadow:0 4px 16px rgba(43,92,230,.08)}
+.cert-icon{font-size:1.2rem;line-height:1.2;flex:0 0 auto}
+.cert-name{font-size:.85rem;font-weight:500;color:var(--ink);line-height:1.35}
+.cert-org{font-size:.75rem;color:var(--muted);margin-top:.25rem;line-height:1.3}
+
+/* CONTACT */
+#contact{background:var(--ink);color:var(--white);padding:6rem max(2rem,calc((100vw - 1100px)/2));display:flex;flex-direction:column;align-items:flex-start;gap:2rem}
+.contact-eyebrow{font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4);font-weight:500}
+.contact-headline{font-family:var(--serif);font-size:clamp(2.5rem,6vw,5rem);line-height:1.05;letter-spacing:-.03em}
+.contact-headline em{font-style:italic;color:rgba(255,255,255,.45)}
+.contact-links{display:flex;gap:1.5rem;flex-wrap:wrap}
+.contact-link{display:flex;align-items:center;gap:.5rem;padding:.65rem 1.4rem;border:1px solid rgba(255,255,255,.15);border-radius:100px;font-size:.88rem;color:rgba(255,255,255,.8);text-decoration:none;transition:border-color .2s,color .2s,background .2s}
+.contact-link:hover{border-color:var(--white);color:var(--white);background:rgba(255,255,255,.08)}
+.footer-bottom{width:100%;margin-top:3rem;padding-top:2rem;border-top:1px solid rgba(255,255,255,.08);display:flex;justify-content:space-between;font-size:.78rem;color:rgba(255,255,255,.3)}
+
+/* ═══ PROJECT MODAL ═══ */
+.modal-overlay{position:fixed;inset:0;z-index:500;background:rgba(14,14,12,.7);backdrop-filter:blur(6px);display:flex;align-items:flex-start;justify-content:center;padding:2rem 1.5rem;opacity:0;pointer-events:none;transition:opacity .3s}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal-box{background:var(--white);border-radius:24px;width:100%;max-width:860px;max-height:90vh;overflow-y:auto;position:relative;transform:translateY(24px);transition:transform .3s cubic-bezier(.16,1,.3,1);scrollbar-width:thin}
+.modal-overlay.open .modal-box{transform:translateY(0)}
+.modal-close{position:sticky;top:1.25rem;float:right;margin-right:1.25rem;width:36px;height:36px;border-radius:50%;background:var(--off-white);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.1rem;z-index:10;transition:background .2s}
+.modal-close:hover{background:var(--border)}
+.modal-media{width:100%;aspect-ratio:16/9;background:var(--off-white);border-radius:20px 20px 0 0;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;flex-shrink:0;padding:1.25rem 1.25rem 0}
+.modal-media img{width:100%;height:100%;object-fit:cover;border-radius:12px 12px 0 0;display:block;box-shadow:0 2px 24px rgba(0,0,0,.13)}
+.modal-media-ph{display:flex;flex-direction:column;align-items:center;gap:.75rem;position:absolute}
+.modal-media-ph-icon{font-size:2rem}
+.modal-media-ph-text{font-size:.85rem;color:var(--muted);font-weight:500}
+.modal-media-ph-sub{font-size:.75rem;color:#CCC}
+.modal-content{padding:2.5rem}
+.modal-tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:1.5rem}
+.modal-tag{font-size:.72rem;font-weight:500;background:#F0F0EE;color:var(--ink-2);padding:.25rem .7rem;border-radius:100px}
+.modal-title{font-family:var(--serif);font-size:clamp(1.8rem,3vw,2.4rem);letter-spacing:-.02em;margin-bottom:.5rem;line-height:1.15}
+.modal-subtitle{font-size:.9rem;color:var(--muted);margin-bottom:2rem;font-weight:400}
+.modal-section{margin-bottom:2rem}
+.modal-section-label{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:.75rem}
+.modal-section p{font-size:.92rem;font-weight:300;color:var(--ink-2);line-height:1.75}
+.modal-highlights{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-top:.5rem}
+.modal-highlight{background:var(--off-white);border:1px solid var(--border);border-radius:12px;padding:1rem 1.25rem}
+.modal-highlight-icon{font-size:1.1rem;margin-bottom:.4rem}
+.modal-highlight-text{font-size:.82rem;font-weight:400;color:var(--ink-2);line-height:1.5}
+.modal-links{display:flex;gap:.75rem;flex-wrap:wrap;margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border)}
+.modal-link{display:inline-flex;align-items:center;gap:.4rem;padding:.55rem 1.2rem;border-radius:100px;font-size:.83rem;font-weight:500;text-decoration:none;transition:all .2s}
+.modal-link.primary{background:var(--ink);color:var(--white)}
+.modal-link.primary:hover{background:var(--accent)}
+.modal-link.secondary{border:1px solid var(--border);color:var(--ink-2)}
+.modal-link.secondary:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light)}
+.project-num span.client {
+  color: var(--accent);
+  font-weight: 500;
+}
+/* REVEAL */
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .65s cubic-bezier(.16,1,.3,1),transform .65s cubic-bezier(.16,1,.3,1)}
+.reveal.visible{opacity:1;transform:translateY(0)}
+.d1{transition-delay:.1s}.d2{transition-delay:.2s}.d3{transition-delay:.3s}.d4{transition-delay:.4s}
+
+/* RESPONSIVE */
+@media(max-width:960px){
+  #hero{grid-template-columns:1fr;grid-template-rows:auto auto auto;row-gap:2rem}
+  .hero-photo-col{grid-column:1;grid-row:1;max-width:240px}
+  .hero-left{grid-row:2}.hero-metrics-row{grid-row:3}
+  .about-grid{grid-template-columns:1fr;gap:2.5rem}
+  .featured-grid{grid-template-columns:1fr}
+  .expand-grid{grid-template-columns:repeat(2,1fr)}
+  .skills-grid{grid-template-columns:1fr 1fr}
+  .cert-list{grid-template-columns:repeat(2,1fr)}
+  .exp-item{grid-template-columns:1fr;gap:.5rem}
+  .modal-highlights{grid-template-columns:1fr}
+}
+@media(max-width:600px){
+  .nav-links{display:none}
+  .expand-grid{grid-template-columns:1fr}
+  .skills-grid{grid-template-columns:1fr}
+  .cert-list{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="main-nav">
+  <a href="#hero" class="nav-logo">Yuki Kong</a>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#projects">Projects</a></li>
+    <li><a href="#experience">Experience</a></li>
+    <li><a href="#skills">Skills</a></li>
+    <li><a href="#contact" class="nav-cta">Get in touch</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-photo-col reveal">
+    <div class="photo-wrap">
+      <div class="photo-placeholder loaded" id="photo-box" onclick="document.getElementById('photo-file').click()" title="Click to change photo">
+        <img id="photo-img" src="image/profile_pict.jpg" alt="Yuki Kong">
+      </div>
+      <input type="file" id="photo-file" accept="image/*" style="display:none">
+    </div>
+  </div>
+  <div class="hero-left">
+    <div class="hero-status reveal"><span class="status-dot"></span>Open to internships from 30 August 2026 to 9th April 2027 · Singapore</div>
+    <h1 class="hero-name reveal d1">Yuki Kong<br><em>— Computing Science</em></h1>
+    <p class="hero-desc reveal d2">Penultimate student at SIT–University of Glasgow. Building at the intersection of data analytics, machine learning, LLMs, and full-stack engineering. Currently annotating AI datasets and shipping real-world systems.</p>
+    <div class="hero-actions reveal d3">
+      <a href="#projects" class="btn-primary">View my work →</a>
+      <a href="https://github.com/CaffeinatedKong" target="_blank" class="btn-ghost"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>GitHub</a>
+      <a href="https://www.linkedin.com/in/yuki-kong-5577641b4/" target="_blank" class="btn-ghost">LinkedIn</a>
+    </div>
+  </div>
+  <div class="hero-metrics-row">
+    <div class="hero-metrics reveal d4">
+      <div><div class="metric-val">4+</div><div class="metric-label">Years industry exp.</div></div>
+      <div><div class="metric-val">15+</div><div class="metric-label">Projects shipped</div></div>
+      <div><div class="metric-val">2</div><div class="metric-label">Industry certs</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="about-grid">
+    <div class="about-text">
+      <p class="section-label reveal">About me</p>
+      <h2 class="reveal d1">Breaking into data &amp; ML<br>with real-world impact</h2>
+      <p class="reveal d2">I'm a penultimate Computing Science student with a background spanning cybersecurity, systems engineering, and full-stack development. I bring a rare mix of analytical rigour and hands-on shipping experience across client projects, contracts, and personal research.</p>
+      <p class="reveal d3">Right now I'm annotating and classifying 2D datasets for AI research at SIT, collaborating with research scientists to improve ML model training pipelines. I'm actively seeking opportunities in data analytics, ML engineering, and software development.</p>
+      <div class="focus-areas reveal d4">
+        <span class="focus-tag">Machine Learning</span><span class="focus-tag">LLMs &amp; NLP</span><span class="focus-tag">Data Analytics</span><span class="focus-tag">Microservices</span><span class="focus-tag">Cloud Engineering</span><span class="focus-tag">Full-Stack Dev</span><span class="focus-tag">Cybersecurity</span>
+      </div>
+    </div>
+    <div class="about-side reveal d2">
+      <h3>Education</h3>
+      <div class="edu-item">
+        <div class="edu-school">Singapore Institute of Technology – University of Glasgow</div>
+        <div class="edu-degree">BSc (Hons) Computing Science</div>
+        <div class="edu-meta">Aug 2024 – Expected May 2027</div>
+      </div>
+      <div class="edu-item">
+        <div class="edu-school">Singapore Polytechnic</div>
+        <div class="edu-degree">Diploma in Infocomm Security Management</div>
+        <div class="edu-meta">Apr 2018 – Mar 2021</div>
+      </div>
+      <h3>Currently</h3>
+      <div class="edu-item">
+        <div class="edu-school">Student Data Analyst · SIT</div>
+        <div class="edu-meta">Segmenting &amp; labelling 2D datasets · CVAT.AI · COCO · PASCAL VOC</div>
+      </div>
+      <h3>Location</h3>
+      <div class="edu-degree" style="font-size:.85rem;color:var(--ink-2)">Based in Singapore, open to remote</div>
+    </div>
+  </div>
+</section>
+
+<!-- PROJECTS -->
+<section id="projects">
+  <div class="projects-header">
+    <div>
+      <p class="section-label reveal">Work</p>
+      <h2 class="reveal d1">Featured projects</h2>
+    </div>
+    <a href="https://github.com/CaffeinatedKong" target="_blank" style="font-size:.85rem;color:var(--accent);text-decoration:none;font-weight:500" class="reveal d2">GitHub →</a>
+  </div>
+
+  <!-- 3 featured -->
+  <div class="featured-grid">
+    <div class="project-card featured reveal" onclick="openModal('underwriting')">
+      <div class="card-media">
+        <img src="image/hl.gif" alt=""><div class="media-ph"> ></div>
+      </div>
+      <div class="card-body">
+<div class="project-num">01 — Contract · <span class="client">HL Assurance</span></div>
+        <div class="project-title">AI Corporate Underwriting System</div>
+        <p class="project-desc">Automated insurance quotation &amp; risk assessment with OCR, LLM models and AI vision — from product owner to full-stack delivery.</p>
+        <div class="project-tags"><span class="project-tag">OCR</span><span class="project-tag">XGBoost</span><span class="project-tag">Flask</span><span class="project-tag">Gemini Vision</span><span class="project-tag">MySQL</span></div>
+        <div class="project-arrow">View details →</div>
+      </div>
+    </div>
+
+    <div class="project-card reveal d1" onclick="openModal('payment')">
+      <div class="card-media">
+        <img src="image/sj-auto.png" alt=""><div class="media-ph"></div>
+      </div>
+      <div class="card-body">
+<div class="project-num">02 — Contract · <span class="client">In progress</span></div>
+        <div class="project-title">Cloud Native Payment Service</div>
+        <p class="project-desc">Serverless payment &amp; accounting platform reducing manual workload by ~90% with real-time WhatsApp notifications and webhook reconciliation.</p>
+        <div class="project-tags"><span class="project-tag">Node.js</span><span class="project-tag">AWS</span><span class="project-tag">React</span><span class="project-tag">HitPay API</span><span class="project-tag">Twilio</span></div>
+        <div class="project-arrow">View details →</div>
+      </div>
+    </div>
+
+    <div class="project-card reveal d2" onclick="openModal('sage')">
+      <div class="card-media">
+        <img src="image/sage.png" alt=""><div class="media-ph"> ></div>
+      </div>
+      <div class="card-body">
+<div class="project-num">03 — Research · <span class="client">In progress</span></div>
+        <div class="project-title">SAGE — SPY Prediction Engine</div>
+        <p class="project-desc">Self-correcting agentic ML pipeline that predicts SPY opening returns daily by synthesising news, sentiment and macro data through an LLM reasoning agent.</p>
+        <div class="project-tags"><span class="project-tag">LLM Agents</span><span class="project-tag">XGBoost</span><span class="project-tag">Python</span><span class="project-tag">Gemini</span><span class="project-tag">Conformal ML</span></div>
+        <div class="project-arrow">View details →</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Expandable grid -->
+  <div class="expand-section" id="expand-section">
+    <div class="expand-grid">
+      <!-- 4: FraudBuster -->
+      <div class="mini-card" onclick="openModal('fraudbuster')">
+        <div class="mini-media">
+          <img src="image/fraudbuster.gif" alt=""><div class="mini-ph"><span class="mini-ph-icon">🎬</span><span class="mini-ph-text">Add GIF</span></div>
+        </div>
+        <div class="mini-body"><div class="mini-title">🕵️ FraudBuster</div><div class="mini-desc">BERT-powered microservice fraud detection for Amazon reviews. 6 services via gRPC, Kubernetes.</div><div class="mini-tags"><span class="mini-tag">BERT</span><span class="mini-tag">gRPC</span><span class="mini-tag">K8s</span></div></div>
+      </div>
+      <!-- 5: Eco Prompt -->
+      <div class="mini-card" onclick="openModal('ecoprompt')">
+        <div class="mini-media">
+          <img src="image/ecoprompt.gif" alt=""><div class="mini-ph"><span class="mini-ph-icon">🎬</span><span class="mini-ph-text">Add GIF</span></div>
+        </div>
+        <div class="mini-body"><div class="mini-title">🌿 Eco Prompt</div><div class="mini-desc">AI-powered sustainability prompt engineering tool to encourage greener lifestyle choices.</div><div class="mini-tags"><span class="mini-tag">LLM</span><span class="mini-tag">Python</span></div></div>
+      </div>
+      <!-- 6: WardWatch -->
+      <div class="mini-card" onclick="openModal('wardwatch')">
+        <div class="mini-media">
+          <img src="image/wardwatch.gif" alt=""><div class="mini-ph"><span class="mini-ph-icon">🎬</span><span class="mini-ph-text">Add GIF</span></div>
+        </div>
+        <div class="mini-body"><div class="mini-title">🏥 WardWatch</div><div class="mini-desc">Privacy-preserving BLE indoor positioning system for hospital patient tracking. ~0.45m accuracy.</div><div class="mini-tags"><span class="mini-tag">BLE</span><span class="mini-tag">ESP-NOW</span><span class="mini-tag">MQTT</span></div></div>
+      </div>
+      <!-- 7: FocusAI -->
+      <div class="mini-card" onclick="openModal('focusai')">
+        <div class="mini-media">
+          <img src="image/focusai.gif" alt=""><div class="mini-ph"><span class="mini-ph-icon">🎬</span><span class="mini-ph-text">Add GIF</span></div>
+        </div>
+        <div class="mini-body"><div class="mini-title">📱 FocusAI</div><div class="mini-desc">Android productivity app with distraction detection, movement breaks, and AI-generated study artifacts from PDFs.</div><div class="mini-tags"><span class="mini-tag">Kotlin</span><span class="mini-tag">Firebase</span><span class="mini-tag">Gemini</span></div></div>
+      </div>
+      <!-- 8: MQTT-SN -->
+      <div class="mini-card" onclick="openModal('mqttsn')">
+        <div class="mini-media">
+          <img src="image/mqtt-sn.png" alt=""><div class="mini-ph"><span class="mini-ph-icon">🎬</span><span class="mini-ph-text">Add GIF</span></div>
+        </div>
+        <div class="mini-body"><div class="mini-title">📡 MQTT-SN via UDP</div><div class="mini-desc">Custom MQTT-SN client on Raspberry Pi Pico W supporting QoS 0/1/2 and chunked image transfer over UDP.</div><div class="mini-tags"><span class="mini-tag">C</span><span class="mini-tag">MQTT-SN</span><span class="mini-tag">Pico W</span></div></div>
+      </div>
+      <!-- 9: IoT Healthcare -->
+      <div class="mini-card" onclick="openModal('iothealthcare')">
+        <div class="mini-media">
+          <img src="image/iot-healthcare-cover.png" alt=""><div class="mini-ph"><span class="mini-ph-icon">🎬</span><span class="mini-ph-text">Add GIF</span></div>
+        </div>
+        <div class="mini-body"><div class="mini-title">💊 IoT Healthcare Monitor</div><div class="mini-desc">Elderly care system with smart medication dispenser, emergency alerts, and blockchain access control via Raspberry Pi.</div><div class="mini-tags"><span class="mini-tag">MQTT</span><span class="mini-tag">AWS SNS</span><span class="mini-tag">Blockchain</span></div></div>
+      </div>
+      <!-- 10: KopiGo -->
+      <div class="mini-card" onclick="openModal('kopigo')">
+        <div class="mini-media">
+          <img src="image/kopigo.png" alt=""><div class="mini-ph"><span class="mini-ph-icon">🎬</span><span class="mini-ph-text">Add GIF</span></div>
+        </div>
+        <div class="mini-body"><div class="mini-title">☕ KopiGo</div><div class="mini-desc">Tourism web app helping visitors discover Singapore hawker centres and attractions with route planning and reviews.</div><div class="mini-tags"><span class="mini-tag">Flask</span><span class="mini-tag">MariaDB</span><span class="mini-tag">MongoDB</span></div></div>
+      </div>
+      <!-- 11: AI Tic-Tac-Toe -->
+      <div class="mini-card" onclick="openModal('tictactoe')">
+        <div class="mini-media">
+          <img src="image/ttt.gif" alt=""><div class="mini-ph"><span class="mini-ph-icon">🎬</span><span class="mini-ph-text">Add GIF</span></div>
+        </div>
+        <div class="mini-body"><div class="mini-title">🎮 AI Tic-Tac-Toe</div><div class="mini-desc">Minimax algorithm with alpha-beta pruning for unbeatable AI opponent, built to explore game-tree search.</div><div class="mini-tags"><span class="mini-tag">Python</span><span class="mini-tag">Minimax</span><span class="mini-tag">AI</span></div></div>
+      </div>
+      <!-- 12: FlySwift -->
+      <div class="mini-card" onclick="openModal('flyswift')">
+        <div class="mini-media">
+          <img src="image/flyswift.png" alt=""><div class="mini-ph"><span class="mini-ph-icon">🎬</span><span class="mini-ph-text">Add GIF</span></div>
+        </div>
+        <div class="mini-body"><div class="mini-title">✈️ FlySwift</div><div class="mini-desc">Flight search app with live Amadeus API pricing, route maps, layover analysis and custom sorting algorithms.</div><div class="mini-tags"><span class="mini-tag">Flask</span><span class="mini-tag">Amadeus API</span><span class="mini-tag">DSA</span></div></div>
+      </div>
+      <!-- 13: Helixtap -->
+      <div class="mini-card" onclick="openModal('helixtap')">
+        <div class="mini-media">
+          <img src="image/helixtap.png" alt=""><div class="mini-ph"><span class="mini-ph-icon">🎬</span><span class="mini-ph-text">Add GIF</span></div>
+        </div>
+        <div class="mini-body"><div class="mini-title">🌐 Revamp Helixtap Website</div><div class="mini-desc">Rebuilt production subscription platform with dynamic Django pages and automated scraping saving 10+ hrs/week.</div><div class="mini-tags"><span class="mini-tag">Django</span><span class="mini-tag">PostgreSQL</span><span class="mini-tag">BeautifulSoup</span></div></div>
+      </div>
+      <!-- 14: Adversarial -->
+      <div class="mini-card" onclick="openModal('adversarial')">
+        <div class="mini-media">
+          <img src="image/amarisai.png" alt=""><div class="mini-ph"><span class="mini-ph-icon">🎬</span><span class="mini-ph-text">Add GIF</span></div>
+        </div>
+        <div class="mini-body"><div class="mini-title">🛡️ AI Adversarial Detector</div><div class="mini-desc">Generated adversarial malware samples achieving 60% evasion rate against commercial antivirus engines.</div><div class="mini-tags"><span class="mini-tag">EvadeML</span><span class="mini-tag">SecML</span><span class="mini-tag">ML</span></div></div>
+      </div>
+      <!-- 15: CovidGuard -->
+      <div class="mini-card" onclick="openModal('covidguard')">
+        <div class="mini-media">
+          <img src="image/amarisai.png" alt=""><div class="mini-ph"><span class="mini-ph-icon">🎬</span><span class="mini-ph-text">Add GIF</span></div>
+        </div>
+        <div class="mini-body"><div class="mini-title">🦠 CovidGuard</div><div class="mini-desc">Proof-of-concept health screening system combining OCR and thermal camera with adversarial API countermeasures.</div><div class="mini-tags"><span class="mini-tag">OCR</span><span class="mini-tag">Thermal</span><span class="mini-tag">Python</span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="view-more-wrap">
+    <button class="view-more-btn" id="view-more-btn" onclick="toggleExpand()">
+      View 12 more projects
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+  </div>
+</section>
+
+<!-- EXPERIENCE -->
+<section id="experience">
+  <h2 class="reveal">Work experience</h2>
+  <div class="timeline">
+    <div class="exp-item reveal">
+      <div><div class="exp-period">Jan 2026 – Present</div><div class="exp-current">Current</div></div>
+      <div>
+        <div class="exp-role">Student Data Analyst</div><div class="exp-company">Singapore Institute of Technology</div>
+        <div class="exp-stack"><span class="stack-tag">CVAT.AI</span><span class="stack-tag">COCO</span><span class="stack-tag">PASCAL VOC</span><span class="stack-tag">Computer Vision</span></div>
+        <ul class="exp-bullets"><li>Segmenting and labelling 2D image datasets for AI model training pipelines</li><li>Collaborating with research scientists to ensure classification consistency and high-quality annotations</li></ul>
+      </div>
+    </div>
+    <div class="exp-item reveal">
+      <div><div class="exp-period">Mar 2024 – Aug 2025</div></div>
+      <div>
+        <div class="exp-role">Systems Operations Engineer</div><div class="exp-company">Teleradio Engineering Pte Ltd (contracted under NCS)</div>
+        <div class="exp-stack"><span class="stack-tag">Networking</span><span class="stack-tag">Data Centre Mgmt</span><span class="stack-tag">Incident Management</span><span class="stack-tag">SLA</span></div>
+        <ul class="exp-bullets"><li>Monitored large-scale data infrastructure ensuring operational continuity with minimal downtime</li><li>Managed incident and service tickets in accordance with Service Level Agreements</li><li>Coordinated cross-team troubleshooting and root cause analysis to expedite system recovery</li></ul>
+      </div>
+    </div>
+    <div class="exp-item reveal">
+      <div><div class="exp-period">Jul 2021 – Sep 2021</div></div>
+      <div>
+        <div class="exp-role">Junior Developer</div><div class="exp-company">HelixTap Technologies</div>
+        <div class="exp-stack"><span class="stack-tag">Django</span><span class="stack-tag">PostgreSQL</span><span class="stack-tag">Selenium</span><span class="stack-tag">BeautifulSoup</span></div>
+        <ul class="exp-bullets"><li>Established dynamic web pages for proprietary subscription-based content on a production platform</li><li>Automated data collection via web scraping, saving 10+ manual hours per week</li></ul>
+      </div>
+    </div>
+    <div class="exp-item reveal">
+      <div><div class="exp-period">Mar 2020 – Aug 2020</div></div>
+      <div>
+        <div class="exp-role">Cyber Security Intern</div><div class="exp-company">Amaris AI</div>
+        <div class="exp-stack"><span class="stack-tag">OCR</span><span class="stack-tag">EvadeML</span><span class="stack-tag">SecML</span><span class="stack-tag">Machine Learning</span></div>
+        <ul class="exp-bullets"><li>Co-built CovidGuard using OCR &amp; thermal cameras to automate health screening with adversarial API countermeasures</li><li>Developed AI Adversarial Inspector generating malware samples with 60% evasion rate against commercial antivirus</li></ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SKILLS -->
+<section id="skills">
+  <p class="section-label reveal">Technical skills</p>
+  <h2 class="reveal d1">Tools &amp; technologies</h2>
+  <div class="skills-grid">
+    <div class="reveal d1"><div class="skill-group-label">Frontend</div><div class="skill-chips"><span class="skill-chip hot">React</span><span class="skill-chip hot">JavaScript</span><span class="skill-chip">TypeScript</span><span class="skill-chip">Next.js</span><span class="skill-chip">HTML/CSS</span><span class="skill-chip">Tailwind CSS</span><span class="skill-chip">Bootstrap</span><span class="skill-chip">DevExtreme</span></div></div>
+    <div class="reveal d2"><div class="skill-group-label">Backend</div><div class="skill-chips"><span class="skill-chip hot">Python</span><span class="skill-chip hot">Flask</span><span class="skill-chip hot">Node.js</span><span class="skill-chip">Django</span><span class="skill-chip">Express.js</span><span class="skill-chip">FastAPI</span><span class="skill-chip">Java</span><span class="skill-chip">REST APIs</span><span class="skill-chip">gRPC</span><span class="skill-chip">MQTT</span><span class="skill-chip">C</span><span class="skill-chip">Rust</span></div></div>
+    <div class="reveal d3"><div class="skill-group-label">Database</div><div class="skill-chips"><span class="skill-chip hot">MongoDB</span><span class="skill-chip hot">PostgreSQL</span><span class="skill-chip">MySQL</span><span class="skill-chip">MariaDB</span><span class="skill-chip">Redis</span><span class="skill-chip">Firebase Firestore</span><span class="skill-chip">MongoDB Atlas</span><span class="skill-chip">SQLAlchemy</span><span class="skill-chip">PyMongo</span></div></div>
+    <div class="reveal d1"><div class="skill-group-label">Cloud &amp; DevOps</div><div class="skill-chips"><span class="skill-chip hot">AWS</span><span class="skill-chip hot">Docker</span><span class="skill-chip hot">Kubernetes</span><span class="skill-chip">AWS Lambda</span><span class="skill-chip">AWS S3</span><span class="skill-chip">AWS SNS/SQS</span><span class="skill-chip">GitHub Actions</span><span class="skill-chip">CI/CD</span><span class="skill-chip">Serverless</span><span class="skill-chip">Git</span><span class="skill-chip">MLflow</span></div></div>
+    <div class="reveal d2"><div class="skill-group-label">Mobile</div><div class="skill-chips"><span class="skill-chip hot">Kotlin</span><span class="skill-chip hot">Android</span><span class="skill-chip">Jetpack Compose</span><span class="skill-chip">Firebase</span><span class="skill-chip">MVVM</span><span class="skill-chip">Hilt</span><span class="skill-chip">Android Studio</span></div></div>
+    <div class="reveal d3"><div class="skill-group-label">AI/ML, Data &amp; IoT</div><div class="skill-chips"><span class="skill-chip hot">LLMs</span><span class="skill-chip hot">XGBoost</span><span class="skill-chip hot">BERT</span><span class="skill-chip">Gemini</span><span class="skill-chip">TensorFlow</span><span class="skill-chip">Pandas</span><span class="skill-chip">NumPy</span><span class="skill-chip">OpenCV</span><span class="skill-chip">Tesseract OCR</span><span class="skill-chip">CVAT.AI</span><span class="skill-chip">COCO</span><span class="skill-chip">PASCAL VOC</span><span class="skill-chip">Selenium</span><span class="skill-chip">BeautifulSoup</span><span class="skill-chip">BLE</span><span class="skill-chip">ESP-NOW</span></div></div>
+  </div>
+</section>
+
+<!-- CERTS -->
+<section id="certs">
+  <p class="section-label reveal">Credentials</p>
+  <h2 class="reveal d1">Certifications</h2>
+  <div class="cert-list">
+    <div class="cert-card reveal d1"><div class="cert-icon">🔐</div><div><div class="cert-name">Organizational Systems Wireless Auditor (OSWA)</div><div class="cert-org">Offensive Security</div></div></div>
+    <div class="cert-card reveal d2"><div class="cert-icon">🛡️</div><div><div class="cert-name">Organizational Systems Security Analyst (OSSA)</div><div class="cert-org">Offensive Security</div></div></div>
+    <div class="cert-card reveal d3"><div class="cert-icon">🐳</div><div><div class="cert-name">Getting Up to Speed with Docker</div><div class="cert-org">Dell Technologies</div></div></div>
+    <div class="cert-card reveal d4"><div class="cert-icon">☸️</div><div><div class="cert-name">Exploring Kubernetes</div><div class="cert-org">Dell Technologies</div></div></div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="contact-eyebrow reveal">Let's connect</div>
+  <h2 class="contact-headline reveal d1">Open to opportunities<br></h2>
+  <p style="font-size:.95rem;font-weight:300;color:rgba(255,255,255,.55);max-width:420px;line-height:1.7" class="reveal d2">Looking for internships and full-time roles in data analytics, ML engineering, Cloud Computing and software development. Let's talk.</p>
+  <div class="contact-links reveal d3">
+    <a href="mailto:yukikong785@gmail.com" class="contact-link">✉ yukikong785@gmail.com</a>
+    <a href="https://www.linkedin.com/in/yuki-kong-5577641b4/" target="_blank" class="contact-link">LinkedIn</a>
+    <a href="https://github.com/CaffeinatedKong" target="_blank" class="contact-link">GitHub</a>
+  </div>
+  <div class="footer-bottom"><span>Yuki Kong © 2026</span><span>Singapore</span></div>
+</section>
+
+<!-- ════════════════════ MODAL ════════════════════ -->
+<div class="modal-overlay" id="modal-overlay" onclick="handleOverlayClick(event)">
+  <div class="modal-box" id="modal-box">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-media" id="modal-media">
+      <img id="modal-media-img" src="" alt="">
+      <div class="modal-media-ph">
+        <span class="modal-media-ph-icon">🎬</span>
+        <span class="modal-media-ph-text">No preview available</span>
+      </div>
+    </div>
+    <div class="modal-content">
+      <div class="modal-tags" id="modal-tags"></div>
+      <div class="modal-title" id="modal-title"></div>
+      <div class="modal-subtitle" id="modal-subtitle"></div>
+      <div class="modal-section"><div class="modal-section-label">Overview</div><p id="modal-overview"></p></div>
+      <div class="modal-section"><div class="modal-section-label">Key highlights</div><div class="modal-highlights" id="modal-highlights"></div></div>
+      <div class="modal-section"><div class="modal-section-label">Problem</div><p id="modal-problem"></p></div>
+      <div class="modal-section"><div class="modal-section-label">Solution</div><p id="modal-solution"></p></div>
+      <div class="modal-section"><div class="modal-section-label">Outcome</div><p id="modal-outcome"></p></div>
+      <div class="modal-links" id="modal-links"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════ PROJECT DATA ══════════════ */
+const PROJECTS = {
+  underwriting: {
+    image: "image/hl.gif",
+    title: "AI Corporate Underwriting System",
+    subtitle: "Client Project · HL Assurance · 2025",
+    tags: ["OCR","XGBoost","Flask","Gemini Vision","MySQL","Geocoding API","OpenCV"],
+    overview: "A web-based underwriting automation platform built to streamline commercial insurance quotation workflows for internal underwriters and managers. The system reduces manual document handling, supports rule-based underwriting decisions, and integrates AI-assisted risk analysis to improve quotation speed, consistency, and decision transparency.",
+    highlights: [
+      {icon:"🏗️", text:"Led as Product Owner — translated manual workflows into structured technical specs and user stories"},
+      {icon:"📄", text:"OCR extraction from Business proposal forms with checkbox detection using contour analysis"},
+      {icon:"🗺️", text:"Geocoding + satellite imagery + AI vision to assess physical site risk (flood, fire, construction, roof)"},
+      {icon:"⚖️", text:"Rule-based referral engine with non-critical pricing adjustments and automated quotation PDF generation"}
+    ],
+    problem: "Traditional underwriting workflows involve excessive manual data entry, inconsistent document verification, and subjective risk assessment. Underwriters spent significant time on repetitive tasks rather than high-value decisions.",
+    solution: "Built an end-to-end MVP with OCR-based proposal form extraction (Tesseract + OpenCV), a rule-based decision engine for approve/reject/referral logic, automated premium calculation with risk multipliers, and AI site intelligence using Google Gemini Vision, Geocoding, and Open-Meteo APIs.",
+    outcome: "Delivered a functional MVP demonstrating how underwriting workflows can be improved through automation and intelligent decision support — reducing repetitive manual work, standardising rule application, and giving underwriters clearer risk insights before final decisions.",
+    github: "https://github.com/CaffeinatedKong"
+  },
+  payment: {
+    image: "image/sj-auto.png",
+    title: "Cloud Native Payment Service",
+    subtitle: "Contract Project · SJ Auto Pte Ltd · 2024",
+    tags: ["Node.js","AWS Lambda","React","HitPay API","Twilio","Webhook","Serverless"],
+    overview: "A fully serverless payment and accounting platform deployed for SJ Auto Pte Ltd. The system handles end-to-end payment processing, real-time reconciliation, and automated customer notifications — replacing a heavily manual, spreadsheet-driven workflow.",
+    highlights: [
+      {icon:"⚡", text:"~90% reduction in manual workload through serverless automation of payment workflows"},
+      {icon:"💬", text:"WhatsApp notifications via Twilio with secure webhook validation for real-time payment confirmations"},
+      {icon:"🔒", text:"Secure webhook validation to prevent replay attacks and unauthorised payment events"},
+      {icon:"☁️", text:"Deployed on AWS Lambda — fully serverless, zero infrastructure maintenance required"}
+    ],
+    problem: "SJ Auto was processing payments manually — staff spent hours each week reconciling payments, updating records, and sending customer confirmations. This was error-prone, slow, and unscalable.",
+    solution: "Deployed a serverless architecture on AWS using Node.js Lambda functions, integrated HitPay's payment API for transaction processing, and used Twilio to trigger WhatsApp confirmation messages automatically on successful payments. Webhook validation ensured only legitimate events triggered business logic.",
+    outcome: "Reduced manual payment handling workload by an estimated 90%. Real-time reconciliation and automated customer notifications improved both operational efficiency and customer experience.",
+    github: "https://github.com/CaffeinatedKong"
+  },
+  sage: {
+    image: "image/sage.png",
+    title: "SAGE — Sentiment-Augmented Generative Engine",
+    subtitle: "Research Project · In Progress · 2025–2026",
+    tags: ["LLM Agents","Gemini","XGBoost","TFT","Conformal Prediction","MLflow","GitHub Actions","Python"],
+    overview: "A self-correcting, agentic ML pipeline that predicts the SPY ETF opening return each trading day by synthesising real-time news, social sentiment, and macroeconomic state through a reasoning LLM agent — with novel LLM-generated synthetic data augmentation for regime-sparse training environments.",
+    highlights: [
+      {icon:"🤖", text:"Agentic LLM (Gemini) synthesises news + macro state into structured JSON sentiment with reasoning traces"},
+      {icon:"🔬", text:"Novel: narrative-grounded counterfactual synthetic data generation — hold macro fixed, vary news narrative"},
+      {icon:"📊", text:"XGBoost + TFT stacking ensemble with conformal prediction intervals (90% coverage guarantee)"},
+      {icon:"🔄", text:"Self-correcting loop: PSI drift detection → auto-retrain with regime-specific synthetic data"}
+    ],
+    problem: "Financial ML models degrade quickly during market regime changes (e.g. banking crises, rate shock periods) because these events are rare in training data. Standard approaches — FinBERT sentiment scoring, TimeGAN price synthesis — don't capture the narrative context that drives market moves.",
+    solution: "A 6-phase pipeline: data ingestion → LLM sentiment scoring → synthetic counterfactual generation (same macro, different news) → model training with walk-forward CV → live daily inference via GitHub Actions cron → post-close self-correction loop with PSI drift detection and auto-retraining when performance degrades.",
+    outcome: "Novel research combining three techniques (LLM market reasoning, narrative synthetic data, self-correcting MLOps) in a single closed loop with no published precedent. Core empirical question: do LLM-generated synthetic scenarios improve out-of-sample directional accuracy? Live validation ongoing.",
+    github: "https://github.com/CaffeinatedKong"
+  },
+  fraudbuster: {
+    image: "image/fraudbuster.gif",
+    title: "FraudBuster",
+    subtitle: "Academic Project · SIT · 2025",
+    tags: ["BERT","gRPC","Kubernetes","Redis","Docker","Python","Microservices"],
+    overview: "A microservice-based fraud detection system that uses a fine-tuned BERT model to classify bot-generated Amazon reviews. Built as a distributed system with 6 independent services communicating over gRPC, deployed on Kubernetes.",
+    highlights: [
+      {icon:"🧠", text:"Fine-tuned BERT model to classify genuine vs bot-generated product reviews with high accuracy"},
+      {icon:"⚙️", text:"6 independent microservices communicating via gRPC — ingestion, preprocessing, inference, storage, API, monitoring"},
+      {icon:"🚀", text:"Kubernetes deployment with horizontal pod autoscaling for production-grade resilience"},
+      {icon:"⚡", text:"Redis caching layer for frequently queried review predictions to reduce inference latency"}
+    ],
+    problem: "Fake and bot-generated reviews on e-commerce platforms mislead consumers and distort product ratings. Rule-based detection is easily gamed; a more sophisticated NLP approach is needed.",
+    solution: "Fine-tuned BERT on labelled Amazon review datasets, wrapped in a microservices architecture to enable independent scaling of each service. gRPC handles inter-service communication for low-latency inference, with Redis caching results for repeated queries.",
+    outcome: "Demonstrated a scalable, production-ready architecture for NLP-based fraud detection. The modular microservices design allows individual components to be updated or scaled independently.",
+    github: "https://github.com/CaffeinatedKong/FraudBuster"
+  },
+  ecoprompt: {
+    image: "image/ecoprompt.gif",
+    title: "Eco Prompt",
+    subtitle: "Personal Project",
+    tags: ["LLM","Python","Prompt Engineering","AI"],
+    overview: "An AI-powered tool that uses prompt engineering techniques to encourage and guide users toward more sustainable lifestyle choices. Leverages LLMs to generate personalised, context-aware sustainability nudges.",
+    highlights: [
+      {icon:"🌿", text:"LLM-powered prompts tailored to individual user context and lifestyle patterns"},
+      {icon:"💡", text:"Explores prompt engineering strategies for behaviour change and sustainable decision-making"},
+      {icon:"📊", text:"Tracks user engagement with sustainability suggestions over time"},
+      {icon:"🔧", text:"Modular prompt templates adaptable to different sustainability domains (food, transport, energy)"}
+    ],
+    problem: "Generic sustainability advice is easy to ignore. People need personalised, contextually relevant nudges that connect to their specific habits and lifestyle.",
+    solution: "Used structured prompt engineering with LLMs to generate personalised sustainability recommendations based on user inputs, applying chain-of-thought and few-shot techniques to produce actionable, non-preachy guidance.",
+    outcome: "Explored the intersection of LLM capabilities and behaviour change design — demonstrating how prompt engineering can be applied beyond coding assistants to real-world sustainability challenges.",
+    github: "https://github.com/CaffeinatedKong"
+  },
+  wardwatch: {
+    image: "image/wardwatch.gif",
+    title: "WardWatch — Hospital Indoor Positioning",
+    subtitle: "Academic Project · SIT · 2025",
+    tags: ["BLE","ESP-NOW","MQTT","Node.js","Kalman Filter","Trilateration","IoT"],
+    overview: "A privacy-preserving, distributed indoor tracking system for hospital environments using BLE wearable tags, ESP-NOW mesh networking, and MQTT. Designed to track dementia patients prone to wandering without using cameras.",
+    highlights: [
+      {icon:"📍", text:"~0.45m positioning accuracy using Weighted Least Squares trilateration on BLE RSSI signals"},
+      {icon:"🔒", text:"Privacy-first — no cameras, no visual data. Tracking via BLE wearable tags only"},
+      {icon:"🕸️", text:"ESP-NOW mesh networking with leader election — < 2s failover on node failure"},
+      {icon:"📊", text:"94.8% zone detection accuracy across Room A, Corridor, Room B zones"}
+    ],
+    problem: "Hospital patients with dementia frequently wander into unsafe areas. Existing solutions (CCTV, manual monitoring) are privacy-invasive, require human supervision, and lack continuous real-time tracking coverage.",
+    solution: "A layered IoT architecture: BLE wearable tags (M5StickC Plus) broadcast signals to nRF52840 anchors that collect RSSI and apply Kalman filtering. Zone nodes compute position via WLS trilateration. ESP-NOW mesh handles routing; a Raspberry Pi gateway publishes location via MQTT to a Node.js dashboard.",
+    outcome: "Achieved sub-metre accuracy in multi-zone hospital environments with < 3% packet loss and < 2s leader re-election time. Demonstrated that privacy-preserving IoT tracking is technically feasible and practically scalable.",
+    github: "https://github.com/CaffeinatedKong"
+  },
+  focusai: {
+    image: "image/focusai.gif",
+    title: "FocusAI — AI Productivity App",
+    subtitle: "Academic Project · SIT · 2025",
+    tags: ["Kotlin","Jetpack Compose","Firebase","Gemini","MVVM","Hilt","Android"],
+    overview: "An AI-powered Android productivity app built to help students stay focused and study more effectively. Combines guided study sessions, real-time distraction monitoring, movement-based break progression, session analytics, and AI-generated learning artifacts from PDFs.",
+    highlights: [
+      {icon:"🎯", text:"Distraction detection via app lifecycle signals and inactivity tracking — triggers reminders and warnings"},
+      {icon:"🏃", text:"Movement-based break progression using accelerometer input — physically confirms the user took a real break"},
+      {icon:"📚", text:"Gemini AI generates notes, quizzes, and podcast-style content directly from uploaded PDFs"},
+      {icon:"📈", text:"Full session analytics — focus time, idle/wasted time, distraction count with historical trends"}
+    ],
+    problem: "Students struggle to stay focused during study sessions. Existing timer apps lack context-awareness — they can't tell if you've switched to Instagram or actually taken a healthy break.",
+    solution: "Built on MVVM with Hilt DI and Firebase backend. StudyModeViewModel orchestrates timer phases, inactivity monitoring, and movement-break tracking. DistractionMonitor detects app backgrounding. Gemini AI processes PDF uploads into structured study artifacts (notes, quizzes, podcast-style summaries) to reduce passive re-reading.",
+    outcome: "Delivered a feature-complete Android app with E2E test coverage, full Firebase auth/Firestore integration, and AI-powered study tools. A live demo is available on YouTube.",
+    github: "https://github.com/CaffeinatedKong",
+    demo: "https://youtu.be/3HTv9mZxZ5Y"
+  },
+  mqttsn: {
+    image: "image/mqtt-sn.png",
+    title: "MQTT-SN Client via UDP",
+    subtitle: "Academic Project · SIT · 2025",
+    tags: ["C","Raspberry Pi Pico W","MQTT-SN","UDP","QoS 0/1/2","SD Card","Embedded"],
+    overview: "A custom MQTT-SN client implementation on Raspberry Pi Pico W that communicates with a Paho Eclipse MQTT-SN Gateway over UDP. Supports all three QoS levels including reliable chunked image transfer from SD card.",
+    highlights: [
+      {icon:"📡", text:"Full QoS 0/1/2 implementation from scratch — including PUBACK retransmission logic for QoS 1"},
+      {icon:"🖼️", text:"QoS 2 chunked base64 image transfer from SD card through the MQTT-SN gateway to subscribers"},
+      {icon:"🔧", text:"Custom MQTT-SN protocol implementation in C on bare-metal Pico W firmware"},
+      {icon:"🌐", text:"Interfaces with Mosquitto broker and Paho MQTT-SN gateway on a laptop host over WiFi UDP"}
+    ],
+    problem: "Constrained IoT devices can't run standard TCP-based MQTT. MQTT-SN over UDP enables publish-subscribe messaging on microcontrollers — but requires implementing the reliability guarantees that TCP would normally provide.",
+    solution: "Implemented the full MQTT-SN protocol stack in C on the Pico W, including CONNECT/CONNACK, REGISTER/REGACK, PUBLISH, PUBACK/PUBCOMP handshakes. Used the no-OS-FatFS-SD-SPI library for SD card access and designed a chunking protocol for reliable image transmission over QoS 2.",
+    outcome: "Successfully demonstrated end-to-end text messaging (QoS 0/1) and image transfer (QoS 2) from a Pico W to a laptop subscriber via a real MQTT broker — validating the custom MQTT-SN client implementation.",
+    github: "https://github.com/CaffeinatedKong"
+  },
+  iothealthcare: {
+    image: "image/iot-healthcare-cover.png",
+    title: "IoT Healthcare Monitoring System",
+    subtitle: "Academic Project · INF1006 · SIT · 2024",
+    tags: ["Raspberry Pi","MQTT","AWS SNS","AWS SQS","Flask","Blockchain","Smart Contract"],
+    overview: "An IoT-based healthcare monitoring system for elderly care at home. Connects temperature, humidity, and touch sensors via Raspberry Pi to track living conditions, support emergency response, and ensure timely medication through a cloud-connected platform.",
+    highlights: [
+      {icon:"💊", text:"Servo-controlled smart medication dispenser with ultrasonic confirmation sensor to verify dose collection"},
+      {icon:"🚨", text:"Emergency alert system — distress button triggers instant SMS to caregivers via AWS SNS"},
+      {icon:"🔐", text:"Blockchain smart contract verification — checks caregiver blockchain address before granting device access"},
+      {icon:"🌐", text:"Flask web server dashboard for remote monitoring, device control, and real-time alerts"}
+    ],
+    problem: "Elderly care at home puts enormous burden on caregivers who can't be physically present 24/7. Missed medications, environmental hazards, and delayed emergency response are serious risks that current manual solutions can't address.",
+    solution: "Built a distributed IoT system using Raspberry Pi nodes communicating via MQTT. Commands flow through AWS SNS → SQS → Main Pi, which dispatches MQTT messages to device nodes (Aircon Pi, Medication Pi). Blockchain smart contracts on Ethereum verify caregiver identity before granting remote access.",
+    outcome: "Delivered a functional proof-of-concept covering remote monitoring, automated medication dispensing, emergency alerts, and access-controlled device management. Demonstrated MQTT, cloud messaging, and blockchain in a real healthcare context.",
+    github: "https://github.com/CaffeinatedKong"
+  },
+  kopigo: {
+    image: "image/kopigo.png",
+    title: "KopiGo — Singapore Tourism App",
+    subtitle: "Academic Project · Singapore Tourism Board · SIT · 2025",
+    tags: ["Flask","MariaDB","MongoDB","Bootstrap","AWS S3","SQLAlchemy","PyMongo"],
+    overview: "A web application that helps tourists discover nearby hawker centres, local food spots, and attractions based on their location. Features an itinerary planner, review system, advanced filtering, and an admin analytics dashboard — built for a Singapore Tourism Board project brief.",
+    highlights: [
+      {icon:"🗺️", text:"Location-based discovery using 110 attractions + 108 hawker centres + 9,051 food places scraped from Google Maps API"},
+      {icon:"📋", text:"Itinerary planner with proximity-based sorting and distance calculation from user's starting point"},
+      {icon:"⚡", text:"SQL + MongoDB hybrid — MariaDB for structured attractions data, MongoDB Atlas for reviews and logs"},
+      {icon:"📊", text:"Admin analytics: review trends (30 days), rating breakdowns, top 5 searched postal codes with TTL log cleanup"}
+    ],
+    problem: "Existing platforms like VisitSingapore.com overlook authentic local experiences such as hawker food. Tourists lack an intuitive tool to discover and plan around both cultural attractions and local food in a single platform.",
+    solution: "Built on Flask with SQLAlchemy (MariaDB) for structured data and PyMongo (MongoDB Atlas) for user-generated content. Implemented complex SQL queries (ROW_NUMBER window functions, full outer joins), AWS S3 for review image uploads, TTL indexes for automatic log cleanup, and performance-benchmarked indexing strategies.",
+    outcome: "Delivered a full-featured web app with 9,000+ food places, CRUD review system, itinerary planning, and admin analytics. Performance benchmarked on both laptop (avg 30ms query) and Raspberry Pi (avg 100ms) environments.",
+    github: "https://github.com/CaffeinatedKong"
+  },
+  tictactoe: {
+    image: "image/ttt.gif",
+    title: "AI Tic-Tac-Toe",
+    subtitle: "Personal Project",
+    tags: ["Python","Minimax","Alpha-Beta Pruning","Game AI"],
+    overview: "An implementation of the classic Tic-Tac-Toe game featuring an unbeatable AI opponent powered by the Minimax algorithm with alpha-beta pruning. Built to explore adversarial game-tree search and optimisation techniques.",
+    highlights: [
+      {icon:"🧠", text:"Minimax algorithm explores all possible game states to guarantee optimal AI play — the AI never loses"},
+      {icon:"✂️", text:"Alpha-beta pruning reduces search space by ~50%, making the AI respond near-instantly"},
+      {icon:"🎮", text:"Clean interactive interface allowing human vs AI or AI vs AI play modes"},
+      {icon:"📐", text:"Explores fundamental CS concepts: recursion, state-space search, and adversarial optimisation"}
+    ],
+    problem: "A classic introduction to adversarial search — how does an AI reason about games where two players have opposing goals?",
+    solution: "Implemented the Minimax algorithm recursively to assign scores to all terminal game states, then propagated those scores back up the game tree. Alpha-beta pruning discards branches that can't influence the final decision, reducing unnecessary computation significantly.",
+    outcome: "Produced an AI that plays perfect Tic-Tac-Toe — it will always win or draw. Served as a practical exploration of game-tree search algorithms that underpin more complex game AI systems.",
+    github: "https://github.com/CaffeinatedKong"
+  },
+  flyswift: {
+    image: "image/flyswift.png",
+    title: "FlySwift — Flight Search App",
+    subtitle: "Academic Project · SIT · 2024",
+    tags: ["Flask","Python","Amadeus API","JavaScript","Insertion Sort","Heap Sort","DSA"],
+    overview: "A web-based flight search application that allows users to search for flights, compare live prices, view routes on an interactive map, and check detailed layover information. Integrates the Amadeus API for real-time pricing.",
+    highlights: [
+      {icon:"✈️", text:"Live flight pricing via Amadeus Flight Offers API with real-time search across routes and dates"},
+      {icon:"🗺️", text:"Interactive route visualisation map showing layovers and connection airports"},
+      {icon:"⚙️", text:"Custom sorting implementations — insertion sort and heap sort for different use cases (price, duration)"},
+      {icon:"🔗", text:"Airline alliance detection and Skyscanner booking redirect integration"}
+    ],
+    problem: "Standard flight search tools are black boxes — users can't understand how results are sorted or filtered. This project aimed to build a transparent, DSA-driven search tool as an academic exercise.",
+    solution: "Built on Flask with the Amadeus API for live flight data. Implemented both insertion sort (small datasets, nearly-sorted) and heap sort (large datasets) from scratch to demonstrate trade-offs. Route visualisation uses a map API to draw actual flight paths including layover airports.",
+    outcome: "Delivered a fully functional flight search app with live API integration, custom sorting algorithms, and route visualisation — demonstrating practical application of data structures and algorithms to a real-world problem.",
+    github: "https://github.com/CaffeinatedKong/DSA_assignment"
+  },
+  helixtap: {
+    image: "image/helixtap.png",
+    title: "Revamp Helixtap Production Website",
+    subtitle: "Junior Developer · HelixTap Technologies · 2021",
+    tags: ["Django","PostgreSQL","Selenium","BeautifulSoup","Python","Web Scraping"],
+    overview: "Rebuilt and extended the production subscription platform for HelixTap Technologies — a proprietary commodity data company. Delivered new dynamic web pages displaying subscription content, and automated the data collection pipeline using web scraping.",
+    highlights: [
+      {icon:"⚡", text:"10+ manual hours saved per week through automated data collection using BeautifulSoup + Selenium"},
+      {icon:"🖥️", text:"Established dynamic Django pages rendering subscription-gated content on a live production platform"},
+      {icon:"🗄️", text:"PostgreSQL schema design and query optimisation for content delivery performance"},
+      {icon:"🤖", text:"Web scraping scripts integrated into the production data pipeline — scheduled and reliable"}
+    ],
+    problem: "The data team at HelixTap was manually collecting commodity data from multiple sources daily — a time-consuming, error-prone process that couldn't scale with the growing data requirements.",
+    solution: "Wrote BeautifulSoup and Selenium scripts to automate data extraction from target sources, integrated them into the existing Django + PostgreSQL production stack, and built new dynamic page templates to surface the collected data to subscribers.",
+    outcome: "Saved 10+ manual hours per week through automation. Successfully shipped new dynamic content pages to production, expanding the platform's subscription offering.",
+    github: "https://github.com/CaffeinatedKong"
+  },
+  adversarial: {
+    image: "image/amarisai.png",
+    title: "AI Adversarial Malware Detector",
+    subtitle: "Internship Project · Amaris AI · 2020",
+    tags: ["EvadeML","SecML","MalNet","Python","Machine Learning","Adversarial ML","Bitdefender"],
+    overview: "A research tool built during the Amaris AI internship to generate adversarial malware samples for evaluating the robustness of in-house malware detectors. Tested generated samples against commercial antivirus software to benchmark evasion capability.",
+    highlights: [
+      {icon:"🎯", text:"60% evasion rate achieved — adversarial samples bypassed commercial antivirus engines in majority of tests"},
+      {icon:"🔬", text:"Used EvadeML and SecML frameworks to craft adversarial perturbations that preserve malware functionality"},
+      {icon:"📊", text:"Benchmarked against Bitdefender and other commercial AV engines to quantify detection gaps"},
+      {icon:"🧪", text:"Generated diverse adversarial sample variants to stress-test classifier robustness across attack strategies"}
+    ],
+    problem: "In-house malware detectors may have blind spots that commercial AV solutions exploit or that adversaries can find. Understanding the evasion rate of adversarial samples is critical for improving ML-based malware classifiers.",
+    solution: "Leveraged EvadeML and SecML to apply gradient-based and black-box adversarial attack strategies to real malware samples, generating variants that preserve functional behaviour while evading ML-based detection signatures. Systematically evaluated these against commercial AV engines.",
+    outcome: "Adversarial samples achieved a 60% evasion rate against commercial antivirus — providing concrete data on the gap between current detection capabilities and adversarial robustness, informing improvements to the in-house malware detection system.",
+    github: "https://github.com/CaffeinatedKong"
+  },
+  covidguard: {
+    image: "image/amarisai.png",
+    title: "CovidGuard — Automated Health Screening",
+    subtitle: "Internship Project · Amaris AI · 2020",
+    tags: ["OCR","Thermal Camera","Python","Flask","Computer Vision","Adversarial ML"],
+    overview: "A proof-of-concept system built during the COVID-19 pandemic to automate health screening at building entry points. Combined OCR-based identity verification, thermal camera temperature screening, and adversarial API countermeasures to prevent spoofing attacks.",
+    highlights: [
+      {icon:"🌡️", text:"Thermal camera integration for automated temperature screening without manual staff involvement"},
+      {icon:"🪪", text:"OCR-based identity document scanning to cross-reference visitor records against a database"},
+      {icon:"🛡️", text:"Adversarial API countermeasures to prevent spoofing attacks on the screening system"},
+      {icon:"⚡", text:"End-to-end automated screening flow — reducing contact and manual processing at entry checkpoints"}
+    ],
+    problem: "During COVID-19, manual health screening at building entrances was slow, created crowding, and exposed staff to infection risk. An automated solution was needed that could verify identity and measure temperature without human contact.",
+    solution: "Built on Python and Flask, integrating a thermal camera feed for temperature detection with OCR-based identity document scanning. Implemented adversarial countermeasures to prevent attempts to spoof the temperature or identity verification components, ensuring the system couldn't be trivially bypassed.",
+    outcome: "Delivered a working proof-of-concept that demonstrated automated, contact-free health screening combining computer vision, OCR, and security hardening. Provided practical experience in real-world CV application under time and resource constraints.",
+    github: "https://github.com/CaffeinatedKong"
+  }
+};
+
+let currentModal = null;
+
+function openModal(id) {
+  const p = PROJECTS[id];
+  if (!p) return;
+  currentModal = id;
+
+  // Media
+  const mi = document.getElementById('modal-media-img');
+  const ph = document.querySelector('.modal-media-ph');
+  mi.src = p.image || '';
+  if (p.image) { ph.style.display = 'none'; mi.style.display = 'block'; }
+  else { ph.style.display = ''; mi.style.display = 'none'; }
+
+  // Fill tags
+  document.getElementById('modal-tags').innerHTML = p.tags.map(t => `<span class="modal-tag">${t}</span>`).join('');
+  document.getElementById('modal-title').textContent = p.title;
+  document.getElementById('modal-subtitle').textContent = p.subtitle;
+  document.getElementById('modal-overview').textContent = p.overview;
+  document.getElementById('modal-problem').textContent = p.problem;
+  document.getElementById('modal-solution').textContent = p.solution;
+  document.getElementById('modal-outcome').textContent = p.outcome;
+
+  document.getElementById('modal-highlights').innerHTML = p.highlights.map(h =>
+    `<div class="modal-highlight"><div class="modal-highlight-icon">${h.icon}</div><div class="modal-highlight-text">${h.text}</div></div>`
+  ).join('');
+
+  let links = `<a href="${p.github}" target="_blank" class="modal-link primary">View on GitHub →</a>`;
+  if (p.demo) links += `<a href="${p.demo}" target="_blank" class="modal-link secondary">▶ Live Demo</a>`;
+  document.getElementById('modal-links').innerHTML = links;
+
+  document.getElementById('modal-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  document.getElementById('modal-box').scrollTop = 0;
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+  currentModal = null;
+}
+
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeModal();
+}
+
+/* ── Expand/collapse ── */
+function toggleExpand() {
+  const sec = document.getElementById('expand-section');
+  const btn = document.getElementById('view-more-btn');
+  const isOpen = sec.classList.contains('open');
+  sec.classList.toggle('open', !isOpen);
+  btn.classList.toggle('open', !isOpen);
+  btn.innerHTML = isOpen
+    ? 'View 12 more projects <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>'
+    : 'Show less <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>';
+  if (!isOpen) { setTimeout(() => document.getElementById('expand-section').scrollIntoView({behavior:'smooth',block:'nearest'}), 50); }
+}
+
+/* ── Profile photo ── */
+document.getElementById('photo-file').addEventListener('change', e => {
+  const file = e.target.files[0]; if (!file) return;
+  document.getElementById('photo-img').src = URL.createObjectURL(file);
+  document.getElementById('photo-box').classList.add('loaded');
+});
+
+/* ── Scroll reveal ── */
+const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); }}), {threshold:.08,rootMargin:'0px 0px -40px 0px'});
+document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+/* ── Nav ── */
+const nav = document.getElementById('main-nav');
+const secs = [...document.querySelectorAll('section[id]')];
+const nls = [...document.querySelectorAll('.nav-links a[href^="#"]')];
+window.addEventListener('scroll', () => {
+  nav.classList.toggle('scrolled', scrollY > 20);
+  let cur = ''; secs.forEach(s => { if (scrollY >= s.offsetTop - 110) cur = s.id; });
+  nls.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + cur));
+});
+
+/* ── Keyboard close ── */
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+</script>
+</body>
+</html>
