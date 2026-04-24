@@ -268,10 +268,9 @@ h1.hero-name em{font-style:italic;color:var(--muted)}
 <section id="hero">
   <div class="hero-photo-col reveal">
     <div class="photo-wrap">
-      <div class="photo-placeholder loaded" id="photo-box" onclick="document.getElementById('photo-file').click()" title="Click to change photo">
-        <img id="photo-img" src="image/profile_pict.jpg" alt="Yuki Kong">
+      <div class="photo-placeholder" id="photo-box">
+        <img id="photo-img" src="image/profile_pict.jpg" alt="Yuki Kong" onload="document.getElementById('photo-box')?.classList.add('loaded')">
       </div>
-      <input type="file" id="photo-file" accept="image/*" style="display:none">
     </div>
   </div>
   <div class="hero-left">
@@ -902,11 +901,25 @@ function toggleExpand() {
 }
 
 /* ── Profile photo ── */
-document.getElementById('photo-file').addEventListener('change', e => {
-  const file = e.target.files[0]; if (!file) return;
-  document.getElementById('photo-img').src = URL.createObjectURL(file);
-  document.getElementById('photo-box').classList.add('loaded');
-});
+const photoFile = document.getElementById('photo-file');
+const photoImg = document.getElementById('photo-img');
+const photoBox = document.getElementById('photo-box');
+
+if (photoFile && photoImg && photoBox) {
+  photoFile.addEventListener('change', e => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    photoImg.src = URL.createObjectURL(file);
+    photoBox.classList.add('loaded');
+  });
+}
+
+if (photoImg && photoBox) {
+  photoImg.addEventListener('error', () => {
+    photoBox.classList.remove('loaded');
+    photoImg.style.display = 'none';
+  });
+}
 
 /* ── Scroll reveal ── */
 const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); }}), {threshold:.08,rootMargin:'0px 0px -40px 0px'});
